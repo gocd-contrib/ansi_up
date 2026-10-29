@@ -430,7 +430,7 @@ export class AnsiUp {
             return;
         }
         let color_mode = sgr_params.shift();
-        if (color_mode === '5') {
+        if (color_mode === '5' && sgr_params.length > 0) {
             let palette_index = parseInt(sgr_params.shift(), 10);
             if (palette_index >= 0 && palette_index <= 255) {
                 return this.palette_256[palette_index];
