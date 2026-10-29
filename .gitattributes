@@ -1,0 +1,5 @@
+# Build output generated from ansi_up.ts by `make`; collapsed in diffs and
+# excluded from language stats on GitHub.
+ansi_up.d.ts        linguist-generated
+ansi_up.js          linguist-generated
+ansi_up.global.js   linguist-generated
