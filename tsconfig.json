@@ -5,6 +5,7 @@
     "noEmitOnError": true,
     "removeComments": true,
     "sourceMap": false,
-    "declaration": true
+    "declaration": true,
+    "outDir": "dist"
   }
 }

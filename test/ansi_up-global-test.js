@@ -1,11 +1,11 @@
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
-const GLOBAL_BUILD = readFileSync(new URL('../ansi_up.global.js', import.meta.url), 'utf8');
+const GLOBAL_BUILD = readFileSync(new URL('../dist/ansi_up.global.js', import.meta.url), 'utf8');
 const SAMPLE = "\x1B[31mred\x1B[0m";
 const EXPECTED = '<span style="color:rgb(187,0,0)">red</span>';
 
-describe('ansi_up plain-script build (ansi_up.global.js)', function () {
+describe('ansi_up plain-script build (dist/ansi_up.global.js)', function () {
 
   it('defines a global AnsiUp when run as a plain script', function () {
     const ctx = vm.createContext({});
@@ -42,7 +42,7 @@ describe('ansi_up plain-script build (ansi_up.global.js)', function () {
   });
 
   it('matches the behaviour of the ES module build', async function () {
-    const { AnsiUp } = await import('../ansi_up.js');
+    const { AnsiUp } = await import('../dist/ansi_up.js');
     const ctx = vm.createContext({});
     vm.runInContext(GLOBAL_BUILD, ctx);
     const input = "\x1B[1;38;5;171mfoo\x1B[0m \x1B[38;2;10;20;30mbar\x1B[0m \x1B]8;;http://example.com\x1B\\link\x1B]8;;\x1B\\";

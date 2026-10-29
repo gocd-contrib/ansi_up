@@ -12,7 +12,7 @@ esm:
 # use ES modules, e.g. when concatenating directly into a plain JS bundle.
 global:
 		./node_modules/.bin/tsc -p tsconfig.global.json
-		cat ./global.header ./build/global/ansi_up.js ./global.footer > ansi_up.global.js
+		cat ./global.header ./build/global/ansi_up.js ./global.footer > dist/ansi_up.global.js
 		rm -rf ./build
 
 test:
@@ -28,6 +28,6 @@ test_verbose:
 				$(TESTS)
 
 clean:
-		rm -rf ./node_modules ./build ansi_up.js ansi_up.d.ts ansi_up.global.js
+		rm -rf ./node_modules ./build ./dist
 
 .PHONY:	test typescript esm global clean

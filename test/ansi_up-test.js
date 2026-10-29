@@ -1,5 +1,5 @@
 
-import { AnsiUp } from '../ansi_up.js';
+import { AnsiUp } from '../dist/ansi_up.js';
 
 describe('ansi_up', function () {
 

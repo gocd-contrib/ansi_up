@@ -30,7 +30,7 @@ For example, turn this terminal output:
 
     var txt  = "\n\n\033[1;33;40m 33;40  \033[1;33;41m 33;41  \033[1;33;42m 33;42  \033[1;33;43m 33;43  \033[1;33;44m 33;44  \033[1;33;45m 33;45  \033[1;33;46m 33;46  \033[1m\033[0m\n\n\033[1;33;42m >> Tests OK\n\n"
 
-    import { AnsiUp } from './ansi_up.js'
+    import { AnsiUp } from './dist/ansi_up.js'
     var ansi_up = new AnsiUp();
 
     var html = ansi_up.ansi_to_html(txt);
@@ -45,11 +45,11 @@ For example, turn this terminal output:
 ## Browser Example (classic script, no modules)
 
 If you cannot use ES modules, for example when `ansi_up` is concatenated into a
-plain script bundle, use `ansi_up.global.js` instead. It unconditionally defines a
+plain script bundle, use `dist/ansi_up.global.js` instead. It unconditionally defines a
 global `AnsiUp` class, which you can instantiate or extend directly.
 
 ```HTML
-    <script src="ansi_up.global.js" type="text/javascript"></script>
+    <script src="dist/ansi_up.global.js" type="text/javascript"></script>
     <script type="text/javascript">
 
     var ansi_up = new AnsiUp();
@@ -63,7 +63,7 @@ global `AnsiUp` class, which you can instantiate or extend directly.
 ## Node Example
 
 ```JavaScript
-    import { AnsiUp } from './ansi_up.js'
+    import { AnsiUp } from 'ansi_up'
     var ansi_up = new AnsiUp();
 
     var txt  = "\n\n\033[1;33;40m 33;40  \033[1;33;41m 33;41  \033[1;33;42m 33;42  \033[1;33;43m 33;43  \033[1;33;44m 33;44  \033[1;33;45m 33;45  \033[1;33;46m 33;46  \033[1m\033[0m\n\n\033[1;33;42m >> Tests OK\n\n"
@@ -76,7 +76,7 @@ More examples are in the 'examples' directory in the repo.
 ## Typescript Example
 
 ```TypeScript
-    import { AnsiUp } from './ansi_up.js'
+    import { AnsiUp } from 'ansi_up'
     const ansi_up = new AnsiUp();
 
     const txt  = "\n\n\x1B[1;33;40m 33;40  \x1B[1;33;41m 33;41  \x1B[1;33;42m 33;42  \x1B[1;33;43m 33;43  \x1B[1;33;44m 33;44  \x1B[1;33;45m 33;45  \x1B[1;33;46m 33;46  \x1B[1m\x1B[0m\n\n\x1B[1;33;42m >> Tests OK\n\n"
@@ -200,10 +200,10 @@ To build, a simple Makefile handles it all.
     $ make
 ```
 
-This generates two files from `ansi_up.ts`:
+This generates the following files into `dist/` from `ansi_up.ts`:
 
-* `ansi_up.js` - an ES module (the package `main`)
-* `ansi_up.global.js` - a plain script (`global.header` + compiled output + `global.footer`)
+* `dist/ansi_up.js` - an ES module (the package `main`)
+* `dist/ansi_up.global.js` - a plain script (`global.header` + compiled output + `global.footer`)
   that defines a global `AnsiUp`, for classic `<script>` tags or concatenation into a plain JS bundle
 
 ## Running tests
