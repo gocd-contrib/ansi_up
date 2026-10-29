@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 /* ansi_up.js
  * author : http://github.com/gocd-contrib/
  * license : MIT
@@ -20,8 +22,8 @@ interface AU_Color
 // at a given point in time, which wraps a fragment of text. This would allow deferred
 // processing of text fragments and colors, if ever needed.
 interface TextWithAttr {
-    fg:AU_Color;
-    bg:AU_Color;
+    fg:AU_Color | null;
+    bg:AU_Color | null;
     bold:boolean;
     faint:boolean;
     italic: boolean;
@@ -56,6 +58,10 @@ type RenderNode =
 type RenderContextStyle = { type: 'style', attrs: TextWithAttr };
 type RenderContextLink = { type: 'url', url: string, children: RenderNode[] };
 type RenderContext = RenderContextStyle | RenderContextLink;
+type UrlAllowlist = {
+    'http':boolean | number,
+    'https': boolean | number
+};
 
 
 //
@@ -64,7 +70,7 @@ type RenderContext = RenderContextStyle | RenderContextLink;
 
 export class AnsiUp
 {
-    VERSION = "6.1.0-gocd";
+    VERSION = "6.1.1-gocd";
 
     //
     // *** SEE README ON GITHUB FOR PUBLIC API ***
@@ -72,23 +78,23 @@ export class AnsiUp
 
     // 256 Colors Palette
     // CSS RGB strings - ex. "255, 255, 255"
-    private ansi_colors:AU_Color[][];
-    private palette_256:AU_Color[];
+    private ansi_colors:AU_Color[][] = [];
+    private palette_256:AU_Color[] = [];
 
-    private fg:AU_Color;
-    private bg:AU_Color;
+    private fg:AU_Color | null;
+    private bg:AU_Color | null;
     private bold:boolean;
     private faint:boolean;
     private italic: boolean;
     private underline:boolean;
     private _use_classes:boolean;
 
-    private _csi_regex:RegExp;
+    private _csi_regex:RegExp | null = null;
 
-    private _osc_st:RegExp;
-    private _osc_regex:RegExp;
+    private _osc_st:RegExp | null = null;
+    private _osc_regex:RegExp | null = null;
 
-    private _url_allowlist:{};
+    private _url_allowlist:UrlAllowlist;
     private _escape_html:boolean;
 
     private _buffer:string;
@@ -116,10 +122,10 @@ export class AnsiUp
         this._url_allowlist = { 'http':1, 'https':1 };
         this._escape_html = true;
 
-        this.boldStyle        = 'font-weight:bold';
-        this.faintStyle       = 'opacity:0.7';
-        this.italicStyle      = 'font-style:italic';
-        this.underlineStyle   = 'text-decoration:underline'
+        this._boldStyle        = 'font-weight:bold';
+        this._faintStyle       = 'opacity:0.7';
+        this._italicStyle      = 'font-style:italic';
+        this._underlineStyle   = 'text-decoration:underline'
     }
 
     set use_classes(arg:boolean)
@@ -132,12 +138,12 @@ export class AnsiUp
         return this._use_classes;
     }
 
-    set url_allowlist(arg:{})
+    set url_allowlist(arg:UrlAllowlist)
     {
         this._url_allowlist = arg;
     }
 
-    get url_allowlist():{}
+    get url_allowlist():UrlAllowlist
     {
         return this._url_allowlist;
     }
@@ -230,28 +236,27 @@ export class AnsiUp
         if (str === ">")  return "&gt;";
         if (str === "\"") return "&quot;";
         if (str === "'")  return "&#x27;";
+        return str;
       });
     }
 
     private append_buffer(txt:string) {
-
-        var str = this._buffer + txt;
-        this._buffer = str;
+        this._buffer += txt;
     }
 
     private get_next_packet():TextPacket {
 
-        var pkt =
+        const pkt =
             {
                 kind: PacketKind.EOS,
                 text: ''
-            } ;
+            };
 
-        var len = this._buffer.length;
+        const len = this._buffer.length;
         if (len == 0)
             return pkt;
 
-        var pos = this._buffer.indexOf("\x1B");
+        const pos = this._buffer.indexOf("\x1B");
 
         // The most common case, no ESC codes
         if (pos == -1)
@@ -281,7 +286,7 @@ export class AnsiUp
                 return pkt;
             }
 
-            var next_char = this._buffer.charAt(1);
+            const next_char = this._buffer.charAt(1);
 
             // We treat this as a single ESC
             // No transformation
@@ -377,8 +382,7 @@ export class AnsiUp
 
                 pkt.text = match[2] // Just the parameters
 
-                var rpos = match[0].length;
-                this._buffer = this._buffer.slice(rpos);
+                this._buffer = this._buffer.slice(match[0].length);
                 return pkt;
             }
             else
@@ -516,8 +520,7 @@ export class AnsiUp
                 pkt.kind = match[1] ? PacketKind.OSCURL : PacketKind.OSCURLEND;
                 pkt.text = match[1];
 
-                var rpos = match[0].length;
-                this._buffer = this._buffer.slice(rpos);
+                this._buffer = this._buffer.slice(match[0].length);
                 return pkt;
             }
             else
@@ -533,6 +536,7 @@ export class AnsiUp
                 return pkt;
             }
         }
+        return pkt;
     }
 
     ansi_to_html(txt:string):string {
@@ -570,7 +574,7 @@ export class AnsiUp
                 this.flush_text(pendingText, renderCtx, rootNodes);
                 pendingText = '';
                 let parts = packet.text.split(':');
-                if (parts.length >= 1 && this._url_allowlist[parts[0]]) {
+                if (parts.length >= 1 && this._url_allowlist[parts[0] as keyof typeof this._url_allowlist]) {
                     renderCtx.push({type: 'url', url: packet.text, children: []});
                 }
             } else if (packet.kind === PacketKind.OSCURLEND) {
@@ -654,7 +658,7 @@ export class AnsiUp
       // ... because some commands consume the params that follow !
 
       while (sgr_cmds.length > 0) {
-          let sgr_cmd_str = sgr_cmds.shift();
+          let sgr_cmd_str = sgr_cmds.shift() as string;
           let num = parseInt(sgr_cmd_str, 10);
 
           // TODO
@@ -703,17 +707,17 @@ export class AnsiUp
       }
     }
 
-    private get_rgb_color(sgr_params: string[], is_itu416: boolean): AU_Color {
+    private get_rgb_color(sgr_params: string[], is_itu416: boolean): AU_Color | null {
         // validate that param exists
         if (sgr_params.length === 0) {
-            return;
+            return null;
         }
 
         let color_mode = sgr_params.shift();
 
         // MODE '5' - 256 color palette
         if (color_mode === '5' && sgr_params.length > 0) {
-            let palette_index = parseInt(sgr_params.shift(), 10);
+            let palette_index = parseInt(sgr_params.shift() as string, 10);
             if (palette_index >= 0 && palette_index <= 255) {
                 return this.palette_256[palette_index];
             }
@@ -722,9 +726,9 @@ export class AnsiUp
         // MODE '2' - True Color
         if (color_mode === '2' && sgr_params.length > 2) {
             if (is_itu416 && sgr_params.length === 4) sgr_params.shift(); // Ignore any colorspace param if there are four; in iso mode
-            let r = parseInt(sgr_params.shift(), 10);
-            let g = parseInt(sgr_params.shift(), 10);
-            let b = parseInt(sgr_params.shift(), 10);
+            let r = parseInt(sgr_params.shift() as string, 10);
+            let g = parseInt(sgr_params.shift() as string, 10);
+            let b = parseInt(sgr_params.shift() as string, 10);
 
             if ((r >= 0 && r <= 255) && (g >= 0 && g <= 255) && (b >= 0 && b <= 255)) {
                 return {rgb: [r, g, b], class_name: 'truecolor'};
@@ -815,7 +819,7 @@ export class AnsiUp
 //
 
 // ES5 template string transformer
-function rgx(tmplObj, ...subst) {
+function rgx(tmplObj:any) {
     // Use the 'raw' value so we don't have to double backslash in a template string
     let regexText:string = tmplObj.raw[0];
 
@@ -827,7 +831,7 @@ function rgx(tmplObj, ...subst) {
 
 // ES5 template string transformer
 // Multi-Line On
-function rgxG(tmplObj, ...subst) {
+function rgxG(tmplObj:any) {
     // Use the 'raw' value so we don't have to double backslash in a template string
     let regexText:string = tmplObj.raw[0];
 

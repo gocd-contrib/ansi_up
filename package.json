@@ -1,6 +1,6 @@
 {
   "name": "ansi_up",
-  "version": "6.1.0-gocd",
+  "version": "6.1.1-gocd",
   "description": "Convert ansi sequences in strings to colorful HTML",
   "keywords": [
     "ansi",
@@ -28,6 +28,6 @@
   "devDependencies": {
     "mocha": "^12.0.3",
     "should": "*",
-    "typescript": "^5.1.0"
+    "typescript": "^7.0.2"
   }
 }

@@ -12,7 +12,12 @@ var PacketKind;
 })(PacketKind || (PacketKind = {}));
 export class AnsiUp {
     constructor() {
-        this.VERSION = "6.1.0-gocd";
+        this.VERSION = "6.1.1-gocd";
+        this.ansi_colors = [];
+        this.palette_256 = [];
+        this._csi_regex = null;
+        this._osc_st = null;
+        this._osc_regex = null;
         this.setup_palettes();
         this._use_classes = false;
         this.bold = false;
@@ -23,10 +28,10 @@ export class AnsiUp {
         this._buffer = '';
         this._url_allowlist = { 'http': 1, 'https': 1 };
         this._escape_html = true;
-        this.boldStyle = 'font-weight:bold';
-        this.faintStyle = 'opacity:0.7';
-        this.italicStyle = 'font-style:italic';
-        this.underlineStyle = 'text-decoration:underline';
+        this._boldStyle = 'font-weight:bold';
+        this._faintStyle = 'opacity:0.7';
+        this._italicStyle = 'font-style:italic';
+        this._underlineStyle = 'text-decoration:underline';
     }
     set use_classes(arg) {
         this._use_classes = arg;
@@ -113,21 +118,21 @@ export class AnsiUp {
                 return "&quot;";
             if (str === "'")
                 return "&#x27;";
+            return str;
         });
     }
     append_buffer(txt) {
-        var str = this._buffer + txt;
-        this._buffer = str;
+        this._buffer += txt;
     }
     get_next_packet() {
-        var pkt = {
+        const pkt = {
             kind: PacketKind.EOS,
             text: ''
         };
-        var len = this._buffer.length;
+        const len = this._buffer.length;
         if (len == 0)
             return pkt;
-        var pos = this._buffer.indexOf("\x1B");
+        const pos = this._buffer.indexOf("\x1B");
         if (pos == -1) {
             pkt.kind = PacketKind.Text;
             pkt.text = this._buffer;
@@ -145,7 +150,7 @@ export class AnsiUp {
                 pkt.kind = PacketKind.Incomplete;
                 return pkt;
             }
-            var next_char = this._buffer.charAt(1);
+            const next_char = this._buffer.charAt(1);
             if ((next_char != '[') && (next_char != ']') && (next_char != '(')) {
                 pkt.kind = PacketKind.ESC;
                 pkt.text = this._buffer.slice(0, 1);
@@ -189,8 +194,7 @@ export class AnsiUp {
                 else
                     pkt.kind = PacketKind.SGR;
                 pkt.text = match[2];
-                var rpos = match[0].length;
-                this._buffer = this._buffer.slice(rpos);
+                this._buffer = this._buffer.slice(match[0].length);
                 return pkt;
             }
             else if (next_char == ']') {
@@ -260,8 +264,7 @@ export class AnsiUp {
                 }
                 pkt.kind = match[1] ? PacketKind.OSCURL : PacketKind.OSCURLEND;
                 pkt.text = match[1];
-                var rpos = match[0].length;
-                this._buffer = this._buffer.slice(rpos);
+                this._buffer = this._buffer.slice(match[0].length);
                 return pkt;
             }
             else if (next_char == '(') {
@@ -270,6 +273,7 @@ export class AnsiUp {
                 return pkt;
             }
         }
+        return pkt;
     }
     ansi_to_html(txt) {
         const nodes = this.ansi_to_structured(txt);
@@ -427,7 +431,7 @@ export class AnsiUp {
     }
     get_rgb_color(sgr_params, is_itu416) {
         if (sgr_params.length === 0) {
-            return;
+            return null;
         }
         let color_mode = sgr_params.shift();
         if (color_mode === '5' && sgr_params.length > 0) {
@@ -518,13 +522,13 @@ export class AnsiUp {
         return `<a href="${this.escape_txt_for_html(node.url)}">${this.render_nodes_to_html(node.children)}</a>`;
     }
 }
-function rgx(tmplObj, ...subst) {
+function rgx(tmplObj) {
     let regexText = tmplObj.raw[0];
     let wsrgx = /^\s+|\s+\n|\s*#[\s\S]*?\n|\n/gm;
     let txt2 = regexText.replace(wsrgx, '');
     return new RegExp(txt2);
 }
-function rgxG(tmplObj, ...subst) {
+function rgxG(tmplObj) {
     let regexText = tmplObj.raw[0];
     let wsrgx = /^\s+|\s+\n|\s*#[\s\S]*?\n|\n/gm;
     let txt2 = regexText.replace(wsrgx, '');
