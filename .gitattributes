@@ -1,4 +1,4 @@
 # Build output generated from ansi_up.ts by `make`; collapsed in diffs and
 # excluded from language stats on GitHub.
-dist/**             linguist-generated
+dist/*              linguist-generated
 package-lock.json   linguist-generated
