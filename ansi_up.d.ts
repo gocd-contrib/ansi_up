@@ -3,8 +3,8 @@ interface AU_Color {
     class_name: string;
 }
 interface TextWithAttr {
-    fg: AU_Color;
-    bg: AU_Color;
+    fg: AU_Color | null;
+    bg: AU_Color | null;
     bold: boolean;
     faint: boolean;
     italic: boolean;
@@ -22,6 +22,10 @@ type RenderNode = {
     type: 'link';
     url: string;
     children: RenderNode[];
+};
+type UrlAllowlist = {
+    'http': boolean | number;
+    'https': boolean | number;
 };
 export declare class AnsiUp {
     VERSION: string;
@@ -47,8 +51,8 @@ export declare class AnsiUp {
     constructor();
     set use_classes(arg: boolean);
     get use_classes(): boolean;
-    set url_allowlist(arg: {});
-    get url_allowlist(): {};
+    set url_allowlist(arg: UrlAllowlist);
+    get url_allowlist(): UrlAllowlist;
     set escape_html(arg: boolean);
     get escape_html(): boolean;
     set boldStyle(arg: string);

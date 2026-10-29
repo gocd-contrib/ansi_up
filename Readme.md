@@ -42,6 +42,24 @@ For example, turn this terminal output:
     </script>
 ```
 
+## Browser Example (classic script, no modules)
+
+If you cannot use ES modules, for example when `ansi_up` is concatenated into a
+plain script bundle, use `ansi_up.global.js` instead. It unconditionally defines a
+global `AnsiUp` class, which you can instantiate or extend directly.
+
+```HTML
+    <script src="ansi_up.global.js" type="text/javascript"></script>
+    <script type="text/javascript">
+
+    var ansi_up = new AnsiUp();
+    var html = ansi_up.ansi_to_html("\033[1;33;42m >> Tests OK\033[0m");
+
+    class MyAnsiUp extends AnsiUp { /* ... */ }
+
+    </script>
+```
+
 ## Node Example
 
 ```JavaScript
@@ -181,6 +199,12 @@ To build, a simple Makefile handles it all.
 ```shell
     $ make
 ```
+
+This generates two files from `ansi_up.ts`:
+
+* `ansi_up.js` - an ES module (the package `main`)
+* `ansi_up.global.js` - a plain script (`global.header` + compiled output + `global.footer`)
+  that defines a global `AnsiUp`, for classic `<script>` tags or concatenation into a plain JS bundle
 
 ## Running tests
 
