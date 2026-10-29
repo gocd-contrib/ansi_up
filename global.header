@@ -1,0 +1,10 @@
+/*  ansi_up.global.js
+ *  author : http://github.com/gocd-contrib/ansi_up
+ *  license : MIT
+ *  http://github.com/gocd-contrib/ansi_up
+ */
+(function (root, factory) {
+    var exp = {};
+    factory(exp);
+    root.AnsiUp = exp.AnsiUp;
+}(typeof globalThis !== 'undefined' ? globalThis : typeof self !== 'undefined' ? self : this, function (exports) {
